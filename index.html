@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>填寫表單</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            max-width: 600px;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+        input[type="text"],
+        input[type="url"],
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        textarea {
+            min-height: 150px;
+        }
+        button[type="submit"] {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: background-color 0.3s ease;
+            width: 100%;
+        }
+        button[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+        #confirmationMessage {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            border: 1px solid #d1d1d1;
+            text-align: center;
+        }
+        #confirmationMessage h2 {
+            color: #28a745;
+            margin-top: 0;
+        }
+        #confirmationMessage p {
+            margin-bottom: 10px;
+            color: #333;
+        }
+        #confirmationMessage a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        #confirmationMessage a:hover {
+            text-decoration: underline;
+        }
+        #confirmationMessage strong {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>新聞稿審稿表單</h1>
+        <form id="submissionForm">
+            <div class="form-group">
+                <label for="reporter">記者姓名：</label><br>
+                <input type="text" id="reporter" name="reporter" required>
+            </div>
+            <div class="form-group">
+                <label for="title">新聞稿標題：</label><br>
+                <input type="text" id="title" name="title" required>
+            </div>
+            <div class="form-group">
+                <label for="content">新聞稿內容：</label><br>
+                <textarea id="content" name="content" rows="7" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="type">類型（是否含話帶）：</label><br>
+                <input type="text" id="type" name="type" required>
+            </div>
+            <div class="form-group">
+                <label for="audio">音檔連結（選填）：</label><br>
+                <input type="url" id="audio" name="audio">
+            </div>
+            <button type="submit">提交</button>
+        </form>
+
+        <div id="confirmationMessage" style="display:none;">
+            <h2>審稿提醒</h2>
+            <p>請協助審稿：</p>
+            <p><strong>記者：</strong> <span id="docReporter"></span></p>
+            <p><strong>標題：</strong> <span id="docTitle"></span></p>
+            <p><strong>稿件內容（前 20 字）：</strong> <span id="docLink"></span></p>
+            <p><strong>含話帶：</strong> <span id="docType"></span></p>
+            <p><strong>音檔：</strong> <span id="docAudio"></span></p>
+            <p>請將以下連結分享給審稿人：</p>
+            <p><a id="shareLink" href="" target="_blank">點此查看審稿頁面</a></p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById("submissionForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+
+            const formData = new FormData(this);
+            const data = {};
+            formData.forEach((value, key) => {
+                data[key] = value;
+            });
+
+            document.getElementById('confirmationMessage').style.display = 'none'; // 隱藏之前的成功訊息
+
+            // 替換成你的 Google Apps Script Web 應用程式 URL
+            const appsScriptUrl = 'https://script.google.com/macros/s/AKfycbw_FM0xhUVbjSeiIMBWrLTBdcLI7vWP88HQFmW_CoH1ynDq_3yp1bQDGGD2eoR4GU2v3Q/exec';
+
+            fetch(appsScriptUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json()) // 預期 Apps Script 回傳 JSON
+            .then(result => {
+                if (result && result.docUrl) {
+                    document.getElementById("confirmationMessage").style.display = "block";
+                    document.getElementById("docReporter").innerText = data.reporter;
+                    document.getElementById("docTitle").innerText = data.title;
+                    document.getElementById("docLink").innerText = data.content.slice(0, 20) + "...";
+                    document.getElementById("docType").innerText = data.type;
+                    document.getElementById("docAudio").innerText = data.audio || "無";
+                    document.getElementById("shareLink").href = result.docUrl;
+                } else if (result && result.error) {
+                    alert('錯誤：' + result.error);
+                } else {
+                    alert('發生未知錯誤，請稍後再試。');
+                }
+            })
+            .catch(error => {
+                console.error('Fetch 錯誤:', error);
+                alert('提交資料時發生錯誤：' + error);
+            });
+        });
+    </script>
+</body>
+</html>
