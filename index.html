@@ -130,7 +130,7 @@
         </div>
     </div>
 
-    <script>
+  <script>
         document.getElementById("submissionForm").addEventListener("submit", function(event) {
             event.preventDefault();
 
@@ -142,8 +142,8 @@
 
             document.getElementById('confirmationMessage').style.display = 'none'; // 隱藏之前的成功訊息
 
-            // 替換成你的 Google Apps Script Web 應用程式 URL
-            const appsScriptUrl = 'https://script.google.com/macros/s/AKfycbw_FM0xhUVbjSeiIMBWrLTBdcLI7vWP88HQFmW_CoH1ynDq_3yp1bQDGGD2eoR4GU2v3Q/exec';
+            // 替換成你的 Google Apps Script Web 應用程式網址
+            const appsScriptUrl = 'https://script.google.com/macros/s/AKfycbwT6Cm1e4O0rvIAszMNlCLIIcTJ8LW65d-7Pf3PdVlL0uU6FHeb7QlgD_cqvWa_la9t6g/exec';
 
             fetch(appsScriptUrl, {
                 method: 'POST',
